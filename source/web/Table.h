@@ -537,8 +537,8 @@ namespace web {
     }
 
     /// Apply CSS to appropriate component based on current state.
-    void DoListen(const std::string & event_name, size_t fun_id) override {
-      parent_t::DoListen(event_name, fun_id);
+    void DoListen(const std::string & event_name, size_t fun_id, const std::string handler_id="default") override {
+      parent_t::DoListen(event_name, fun_id, handler_id);
     }
 
   public:

@@ -34,8 +34,8 @@ namespace web {
       if (IsActive()) Info()->ReplaceHTML();   // @CAO only should replace cell's CSS
     }
 
-    void DoListen(const std::string & event_name, size_t fun_id) override {
-      Info()->rows[cur_row].extras.listen.Set(event_name, fun_id);
+    void DoListen(const std::string & event_name, size_t fun_id, const std::string handler_id="default") override {
+      Info()->rows[cur_row].extras.listen.Set(event_name, fun_id, handler_id);
       if (IsActive()) Info()->ReplaceHTML();   // @CAO only should replace cell's CSS
     }
 

@@ -581,8 +581,8 @@ namespace web {
       }
       /// Listener options may be overridden in derived classes that have multiple listen targets.
       /// By default DoListen will track new listens and set them up immediately, if active.
-      virtual void DoListen(const std::string & event_name, size_t fun_id) {
-        info->extras.listen.Set(event_name, fun_id);
+      virtual void DoListen(const std::string & event_name, size_t fun_id, const std::string handler_id="default") {
+        info->extras.listen.Set(event_name, fun_id, handler_id);
         if (IsActive()) Listeners::Apply(info->id, event_name, fun_id);
       }
 
@@ -645,20 +645,33 @@ namespace web {
 
       /// Provide an event and a function that will be called when that event is triggered.
       /// In this case, the function as no arguments.
-      return_t & On(const std::string & event_name, const std::function<void()> & fun) {
+      return_t & On(const std::string & event_name, const std::function<void()> & fun,
+      const std::string handler_id="default") {
         emp_assert(info != nullptr);
         size_t fun_id = JSWrap(fun);
-        DoListen(event_name, fun_id);
+        DoListen(event_name, fun_id, handler_id);
         return (return_t &) *this;
       }
 
       /// Provide an event and a function that will be called when that event is triggered.
       /// In this case, the function takes a mouse event as an argument, with full info about mouse.
       return_t & On(const std::string & event_name,
-                    const std::function<void(MouseEvent evt)> & fun) {
+                    const std::function<void(MouseEvent evt)> & fun,
+                    const std::string handler_id="default") {
         emp_assert(info != nullptr);
         size_t fun_id = JSWrap(fun);
-        DoListen(event_name, fun_id);
+        DoListen(event_name, fun_id, handler_id);
+        return (return_t &) *this;
+      }
+
+      /// Provide an event and a function that will be called when that event is triggered.
+      /// In this case, the function takes a keyboard event as an argument, with full info about keyboard.
+      return_t & On(const std::string & event_name,
+                    const std::function<void(KeyboardEvent evt)> & fun,
+                    const std::string handler_id="default") {
+        emp_assert(info != nullptr);
+        size_t fun_id = JSWrap(fun);
+        DoListen(event_name, fun_id, handler_id);
         return (return_t &) *this;
       }
       
@@ -675,7 +688,8 @@ namespace web {
       /// Provide an event and a function that will be called when that event is triggered.
       /// In this case, the function takes two doubles which will be filled in with mouse coordinates.
       return_t & On(const std::string & event_name,
-                    const std::function<void(double,double)> & fun) {
+                    const std::function<void(double,double)> & fun,
+                    const std::string handler_id="default") {
         emp_assert(info != nullptr);
         auto fun_cb = [this, fun](MouseEvent evt){
           double x = evt.clientX - GetXPos();
@@ -683,54 +697,60 @@ namespace web {
           fun(x,y);
         };
         size_t fun_id = JSWrap(fun_cb);
-        DoListen(event_name, fun_id);
+        DoListen(event_name, fun_id, handler_id);
+        return (return_t &) *this;
+      }
+
+      return_t & RemoveListener(const std::string & event_name, const std::string handler_id="default") {
+        info->extras.listen.Remove(event_name, handler_id);
+        info -> ReplaceHTML();
         return (return_t &) *this;
       }
 
       /// Provide a function to be called when the window is resized.
-      template <typename T> return_t & OnResize(T && arg) { return On("resize", arg); }
+      template <typename T> return_t & OnResize(T && arg, const std::string handler_id="default") { return On("resize", arg, handler_id); }
 
       /// Provide a function to be called when the mouse button is clicked in this Widget.
-      template <typename T> return_t & OnClick(T && arg) { return On("click", arg); }
+      template <typename T> return_t & OnClick(T && arg, const std::string handler_id="default") { return On("click", arg, handler_id); }
 
       /// Provide a function to be called when the mouse button is double clicked in this Widget.
-      template <typename T> return_t & OnDoubleClick(T && arg) { return On("dblclick", arg); }
+      template <typename T> return_t & OnDoubleClick(T && arg, const std::string handler_id="default") { return On("dblclick", arg, handler_id); }
 
       /// Provide a function to be called when the mouse button is pushed down in this Widget.
-      template <typename T> return_t & OnMouseDown(T && arg) { return On("mousedown", arg); }
+      template <typename T> return_t & OnMouseDown(T && arg, const std::string handler_id="default") { return On("mousedown", arg, handler_id); }
 
       /// Provide a function to be called when the mouse button is released in this Widget.
-      template <typename T> return_t & OnMouseUp(T && arg) { return On("mouseup", arg); }
+      template <typename T> return_t & OnMouseUp(T && arg, const std::string handler_id="default") { return On("mouseup", arg, handler_id); }
 
       /// Provide a function to be called whenever the mouse moves in this Widget.
-      template <typename T> return_t & OnMouseMove(T && arg) { return On("mousemove", arg); }
+      template <typename T> return_t & OnMouseMove(T && arg, const std::string handler_id="default") { return On("mousemove", arg, handler_id); }
 
       /// Provide a function to be called whenever the mouse leaves the Widget.
-      template <typename T> return_t & OnMouseOut(T && arg) { return On("mouseout", arg); }
+      template <typename T> return_t & OnMouseOut(T && arg, const std::string handler_id="default") { return On("mouseout", arg, handler_id); }
 
       /// Provide a function to be called whenever the mouse moves over the Widget.
-      template <typename T> return_t & OnMouseOver(T && arg) { return On("mouseover", arg); }
+      template <typename T> return_t & OnMouseOver(T && arg, const std::string handler_id="default") { return On("mouseover", arg, handler_id); }
 
       /// Provide a function to be called whenever the mouse wheel moves in this Widget.
-      template <typename T> return_t & OnMouseWheel(T && arg) { return On("mousewheel", arg); }
+      template <typename T> return_t & OnMouseWheel(T && arg, const std::string handler_id="default") { return On("mousewheel", arg, handler_id); }
 
       /// Provide a function to be called whenever a key is pressed down in this Widget.
-      template <typename T> return_t & OnKeydown(T && arg) { return On("keydown", arg); }
+      template <typename T> return_t & OnKeydown(T && arg, const std::string handler_id="default") { return On("keydown", arg, handler_id); }
 
       /// Provide a function to be called whenever a key is pressed down and released in this Widget.
-      template <typename T> return_t & OnKeypress(T && arg) { return On("keypress", arg); }
+      template <typename T> return_t & OnKeypress(T && arg, const std::string handler_id="default") { return On("keypress", arg, handler_id); }
 
       /// Provide a function to be called whenever a key is pressed released in this Widget.
-      template <typename T> return_t & OnKeyup(T && arg) { return On("keyup", arg); }
+      template <typename T> return_t & OnKeyup(T && arg, const std::string handler_id="default") { return On("keyup", arg, handler_id); }
 
       /// Provide a function to be called whenever text is copied in this Widget.
-      template <typename T> return_t & OnCopy(T && arg) { return On("copy", arg); }
+      template <typename T> return_t & OnCopy(T && arg, const std::string handler_id="default") { return On("copy", arg, handler_id); }
 
       /// Provide a function to be called whenever text is cut in this Widget.
-      template <typename T> return_t & OnCut(T && arg) { return On("cut", arg); }
+      template <typename T> return_t & OnCut(T && arg, const std::string handler_id="default") { return On("cut", arg, handler_id); }
 
       /// Provide a function to be called whenever text is pasted in this Widget.
-      template <typename T> return_t & OnPaste(T && arg) { return On("paste", arg); }
+      template <typename T> return_t & OnPaste(T && arg, const std::string handler_id="default") { return On("paste", arg, handler_id); }
 
       /// Create a tooltip for this Widget.
       return_t & SetTitle(const std::string & _in) { return SetAttr("title", _in); }
